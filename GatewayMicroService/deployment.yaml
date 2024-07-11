@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatewayapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gatewayapp
+  template:
+    metadata:
+      labels:
+        app: gatewayapp
+    spec:
+      containers:
+        - name: gatewayservice-container
+          image: us-east1-docker.pkg.dev/kubernetes-012/kubernetes-assignment/container1:latest
+          ports:
+            - containerPort: 6000
+          volumeMounts:
+            - mountPath: /kunj_PV_dir
+              name: pvc-vol
+      volumes:
+        - name: pvc-vol
+          persistentVolumeClaim:
+            claimName: gateway-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatewayservice
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http-6000
+      protocol: TCP
+      port: 80
+      targetPort: 6000
+  selector:
+    app: gatewayapp
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gateway-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard

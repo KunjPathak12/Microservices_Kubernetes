@@ -1,0 +1,39 @@
+steps:
+  - name: 'maven:3.8.1-openjdk-17'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        mvn clean install -DskipTests
+
+  # Docker Build
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'us-east1-docker.pkg.dev/kubernetes-012/kubernetes-assignment/container2',
+      '--build-arg', 'JAR_FILE=target/StockCalculator-0.0.1-SNAPSHOT.jar',
+      '.'
+    ]
+
+  # Docker Push
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'push',
+      'us-east1-docker.pkg.dev/kubernetes-012/kubernetes-assignment/container2'
+    ]
+
+  # Deployment Step
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    args:
+      - run
+      - --filename=deployment1.yaml
+      - --location=us-central1-a
+      - --cluster=kubernetes-assignment
+
+# Lists the Docker images that were built and pushed, providing a reference for further steps or outputs.
+images:
+  - 'us-east1-docker.pkg.dev/kubernetes-012/kubernetes-assignment/container2:latest'
+
+# Global options for the build
+options:
+  logging: CLOUD_LOGGING_ONLY

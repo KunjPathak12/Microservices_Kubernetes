@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calculateapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: calculateapp
+  template:
+    metadata:
+      labels:
+        app: calculateapp
+    spec:
+      containers:
+        - name: calculateservice-container
+          image: us-east1-docker.pkg.dev/kubernetes-012/kubernetes-assignment/container2:latest
+          ports:
+            - containerPort: 6001
+          volumeMounts:
+            - mountPath: /kunj_PV_dir
+              name: pvc-vol
+      volumes:
+        - name: pvc-vol
+          persistentVolumeClaim:
+            claimName: gateway-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: calculateservice
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http-6001
+      protocol: TCP
+      port: 80
+      targetPort: 6001
+  selector:
+    app: calculateapp
+
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: calculate-pvc
+#spec:
+#  accessModes:
+#    - ReadWriteOnce
+#  resources:
+#    requests:
+#      storage: 1Gi
+#  storageClassName: standard

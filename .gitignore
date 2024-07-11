@@ -1,0 +1,9 @@
+auth/
+/auth/
+./auth/
+.terraform
+/.terraform
+./.terraform
+*.hcl
+*.tfstate
+*.tfstate.backup
